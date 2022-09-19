@@ -15,7 +15,21 @@ let spaceshipX, spaceshipY;
 spaceSlide = 60;
 spaceshipX = canvas.width / 2 - spaceSlide / 2;
 spaceshipY = canvas.height - spaceSlide - 15;
-console.log(spaceshipY);
+// 총알 저장 리스트
+let bulletList = [];
+function Bullet() {
+  this.x = 0;
+  this.y = 0;
+  this.init = function () {
+    this.x = spaceshipX + 18;
+    this.y = spaceshipY;
+    bulletList.push(this);
+  };
+  this.update = function () {
+    this.y -= 7;
+  };
+}
+let keysdown = {};
 let loadImage = () => {
   backgrundImage = new Image();
   backgrundImage.src = "images/background.jpg";
@@ -28,42 +42,43 @@ let loadImage = () => {
   GameoverImage = new Image();
   GameoverImage.src = "images/gameover.png";
 };
-let keysdown = {};
+function createBullet() {
+  console.log("총알 발사");
+  let b = new Bullet();
+  b.init();
+}
 // push direction key,
 function setupKeyboardListener() {
   document.addEventListener("keydown", function (event) {
     keysdown[event.key] = true;
-    console.log("눌린 키", keysdown);
+    console.log(keysdown);
     document.addEventListener("keyup", function (event) {
       delete keysdown[event.key];
-      console.log("클릭 후", keysdown);
+      if (event.key == " ") {
+        createBullet();
+      }
     });
   });
 }
+
 let update = () => {
-  if ("ArrowRight" in keysdown && spaceshipX < 400 - spaceSlide) {
+  if ("ArrowRight" in keysdown && spaceshipX <= canvas.width - spaceSlide) {
     spaceshipX += 5;
-    console.log(spaceshipX);
   }
-  if ("ArrowLeft" in keysdown && spaceshipX > 0) {
+  if ("ArrowLeft" in keysdown && spaceshipX >= 0) {
     spaceshipX -= 5;
-    console.log(spaceshipX);
   }
-  // if ("ArrowDown" in keysdown && spaceshipY > 625) {
-  //   spaceshipY += 5;
-  //   console.log(spaceshipY);
-  //   // spaceshipY -= 5;
-  // }
-  // if ("ArrowUp" in keysdown) {
-  //   spaceshipY -= 5;
-  //   console.log(spaceshipY);
-  //   // spaceshipY -= 5;
-  // }
-  // 우주선의 좌표값이 무한대로 업데이트가 아닌 경기장 안에서만 있게하려면?
+  // 총알의 y좌표 업데이트 함수 호출
+  bulletList.forEach((ele) => {
+    ele.update();
+  });
 }; // images render
 let render = () => {
   ctx.drawImage(backgrundImage, 0, 0, canvas.width, canvas.height);
   ctx.drawImage(spaceImage, spaceshipX, spaceshipY);
+  bulletList.forEach((ele) => {
+    ctx.drawImage(bulletImage, ele.x, ele.y);
+  });
 };
 // continue visible
 let main = () => {
@@ -75,5 +90,9 @@ loadImage();
 main();
 setupKeyboardListener();
 
-// change ship location
-// rerender
+// 총알 만들기
+// 1. 스페이스바를 누르면 총알 발사
+// 2. 총알 발사 : 총알 y값이 --, 총알 xrkqtdl 스페이스를 누른 순간의 우주선 좌표
+// 3. 발사된 총알들은 총알 배열에 저장한다.
+// 4. 총알들은 x,y 좌표가 있어야 한다.
+// 5. 총알 배열을 가지고 render 그려줌.
