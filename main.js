@@ -7,7 +7,8 @@ canvas.width = 400;
 canvas.height = 700;
 document.body.appendChild(canvas);
 // images load
-let backgrundImage, spaceImage, bulletImage, enermyMdImage, GameoverImage;
+let backgrundImage, spaceImage, bulletImage, enermyImage, GameoverImage;
+let gameOver = false;
 // ship size(squeare)
 let spaceSlide;
 // ship location
@@ -17,6 +18,7 @@ spaceshipX = canvas.width / 2 - spaceSlide / 2;
 spaceshipY = canvas.height - spaceSlide - 15;
 // 총알 저장 리스트
 let bulletList = [];
+let enermyList = [];
 function Bullet() {
   this.x = 0;
   this.y = 0;
@@ -29,6 +31,29 @@ function Bullet() {
     this.y -= 7;
   };
 }
+
+let generateRandomValue = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1));
+};
+function Enermy() {
+  this.x = 0;
+  this.y = 0;
+  this.init = function () {
+    this.x = generateRandomValue(0, canvas.width - 48);
+    this.y = 0;
+    enermyList.push(this);
+  };
+  this.update = function () {
+    this.y += 5;
+  };
+}
+
+let createEneremy = () => {
+  setInterval(() => {
+    let e = new Enermy();
+    e.init();
+  }, 500);
+};
 let keysdown = {};
 let loadImage = () => {
   backgrundImage = new Image();
@@ -37,16 +62,18 @@ let loadImage = () => {
   spaceImage.src = "images/spaceship.png";
   bulletImage = new Image();
   bulletImage.src = "images/bullet.png";
-  enermyMdImage = new Image();
-  enermyMdImage.src = "images/enermy-md.png";
+
   GameoverImage = new Image();
   GameoverImage.src = "images/gameover.png";
+
+  enermyImage = new Image();
+  enermyImage.src = "images/enermy.png";
 };
-function createBullet() {
+let createBullet = () => {
   console.log("총알 발사");
   let b = new Bullet();
   b.init();
-}
+};
 // push direction key,
 function setupKeyboardListener() {
   document.addEventListener("keydown", function (event) {
@@ -72,12 +99,18 @@ let update = () => {
   bulletList.forEach((ele) => {
     ele.update();
   });
+  enermyList.forEach((ele) => {
+    ele.update();
+  });
 }; // images render
 let render = () => {
   ctx.drawImage(backgrundImage, 0, 0, canvas.width, canvas.height);
   ctx.drawImage(spaceImage, spaceshipX, spaceshipY);
   bulletList.forEach((ele) => {
     ctx.drawImage(bulletImage, ele.x, ele.y);
+  });
+  enermyList.forEach((ele) => {
+    ctx.drawImage(enermyImage, ele.x, ele.y);
   });
 };
 // continue visible
@@ -87,8 +120,9 @@ let main = () => {
   requestAnimationFrame(main);
 };
 loadImage();
-main();
 setupKeyboardListener();
+createEneremy();
+main();
 
 // 총알 만들기
 // 1. 스페이스바를 누르면 총알 발사
