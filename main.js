@@ -31,7 +31,6 @@ function Bullet() {
     this.y -= 7;
   };
 }
-
 let generateRandomValue = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1));
 };
@@ -44,10 +43,14 @@ function Enermy() {
     enermyList.push(this);
   };
   this.update = function () {
-    this.y += 5;
+    this.y += 3;
+    if (this.y >= canvas.height - 48) {
+      gameOver = true;
+      console.log("gameover");
+      console.log(canvas.height - 48);
+    }
   };
 }
-
 let createEneremy = () => {
   setInterval(() => {
     let e = new Enermy();
@@ -62,10 +65,8 @@ let loadImage = () => {
   spaceImage.src = "images/spaceship.png";
   bulletImage = new Image();
   bulletImage.src = "images/bullet.png";
-
   GameoverImage = new Image();
   GameoverImage.src = "images/gameover.png";
-
   enermyImage = new Image();
   enermyImage.src = "images/enermy.png";
 };
@@ -87,7 +88,6 @@ function setupKeyboardListener() {
     });
   });
 }
-
 let update = () => {
   if ("ArrowRight" in keysdown && spaceshipX <= canvas.width - spaceSlide) {
     spaceshipX += 5;
@@ -115,15 +115,18 @@ let render = () => {
 };
 // continue visible
 let main = () => {
-  update(); // 좌표값을 업데이트하고
-  render(); // 그려주고
-  requestAnimationFrame(main);
+  if (!gameOver) {
+    update(); // 좌표값을 업데이트하고
+    render(); // 그려주고
+    requestAnimationFrame(main);
+  } else {
+    ctx.drawImage(GameoverImage, 10, 100, 380, 380);
+  }
 };
 loadImage();
 setupKeyboardListener();
 createEneremy();
 main();
-
 // 총알 만들기
 // 1. 스페이스바를 누르면 총알 발사
 // 2. 총알 발사 : 총알 y값이 --, 총알 xrkqtdl 스페이스를 누른 순간의 우주선 좌표
