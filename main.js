@@ -18,17 +18,29 @@ spaceshipX = canvas.width / 2 - spaceSlide / 2;
 spaceshipY = canvas.height - spaceSlide - 15;
 // 총알 저장 리스트
 let bulletList = [];
+// 적군 저장 리스트
 let enermyList = [];
+let score = 0;
 function Bullet() {
   this.x = 0;
   this.y = 0;
   this.init = function () {
     this.x = spaceshipX + 18;
     this.y = spaceshipY;
+    this.alive = true;
     bulletList.push(this);
   };
   this.update = function () {
     this.y -= 7;
+  };
+  this.checkHit = function () {
+    enermyList.forEach((ele, i) => {
+      if (this.y <= ele.y && this.x >= ele.x && this.x <= ele.x + 48) {
+        score++; //점수를 얻음
+        this.alive = false; // 총알이 죽음
+        enermyList.splice(i, 1); //적군이 사라짐
+      }
+    });
   };
 }
 let generateRandomValue = (min, max) => {
@@ -43,11 +55,9 @@ function Enermy() {
     enermyList.push(this);
   };
   this.update = function () {
-    this.y += 3;
-    if (this.y >= canvas.height - 48) {
+    this.y += 0.5;
+    if (this.y > canvas.height - 48) {
       gameOver = true;
-      console.log("gameover");
-      console.log(canvas.height - 48);
     }
   };
 }
@@ -57,7 +67,7 @@ let createEneremy = () => {
     e.init();
   }, 500);
 };
-let keysdown = {};
+
 let loadImage = () => {
   backgrundImage = new Image();
   backgrundImage.src = "images/background.jpg";
@@ -71,18 +81,18 @@ let loadImage = () => {
   enermyImage.src = "images/enermy.png";
 };
 let createBullet = () => {
-  console.log("총알 발사");
   let b = new Bullet();
   b.init();
+  console.log(bulletList);
 };
+let keysdown = {};
 // push direction key,
 function setupKeyboardListener() {
   document.addEventListener("keydown", function (event) {
     keysdown[event.key] = true;
-    console.log(keysdown);
     document.addEventListener("keyup", function (event) {
       delete keysdown[event.key];
-      if (event.key == " ") {
+      if (event.key === " ") {
         createBullet();
       }
     });
@@ -97,7 +107,10 @@ let update = () => {
   }
   // 총알의 y좌표 업데이트 함수 호출
   bulletList.forEach((ele) => {
-    ele.update();
+    if (ele.alive) {
+      ele.update();
+      ele.checkHit();
+    }
   });
   enermyList.forEach((ele) => {
     ele.update();
@@ -106,8 +119,16 @@ let update = () => {
 let render = () => {
   ctx.drawImage(backgrundImage, 0, 0, canvas.width, canvas.height);
   ctx.drawImage(spaceImage, spaceshipX, spaceshipY);
+  ctx.fillText(`Score : ${score}`, 20, 20);
+  ctx.fillStyle = "#fff";
+  ctx.font = "20px Arial";
   bulletList.forEach((ele) => {
-    ctx.drawImage(bulletImage, ele.x, ele.y);
+    if (ele.alive) {
+      ctx.drawImage(bulletImage, ele.x, ele.y);
+    } else {
+      // alert("총알 없음");
+      console.log("총알 없음");
+    }
   });
   enermyList.forEach((ele) => {
     ctx.drawImage(enermyImage, ele.x, ele.y);
@@ -133,3 +154,7 @@ main();
 // 3. 발사된 총알들은 총알 배열에 저장한다.
 // 4. 총알들은 x,y 좌표가 있어야 한다.
 // 5. 총알 배열을 가지고 render 그려줌.
+// 점수 매기기
+// 총알.y <= 적군.y and
+// 적군.x <= 총알.x값 <=  적군.x + 48
+// = 닿았다. -> 총알, 적군 사라짐.
